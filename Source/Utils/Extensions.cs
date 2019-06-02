@@ -18,7 +18,9 @@ namespace RealismOverhaul.Utils
         public static float FromLog2(this int value) => Mathf.Pow(2, value);
 
         public static float ToDB(this float value) => Mathf.Log10(value) * 10;
-        public static float FromDB(this float value) => Mathf.Pow(10, value / 10f);
+        public static float FromDB(this float value) => Mathf.Pow(10, value / 10);
+        public static float ToDBm(this float value) => (value * 1000).ToDB();
+        public static float FromDBm(this float value) => value.FromDB() / 1000;
 
         public static string Format(this float value, string unit, int logBase = 1000)
         {
