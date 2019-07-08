@@ -112,10 +112,18 @@ namespace RealismOverhaul.Communications
         public void Start()
         {
             _isKerbalismLoaded = AssemblyLoader.loadedAssemblies.Any(x => x.name.StartsWith("Kerbalism"));
-            ReScale(false);
+            SetInitialScale();
             SetMaxTechLevel();
             UpdateConfiguration();
             SetupPaw();
+        }
+
+        private void SetInitialScale()
+        {
+            if (IsScalable)
+            {
+                ReScale(false);
+            }
         }
 
         private void OnFirstLoad()
