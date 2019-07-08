@@ -212,6 +212,8 @@ namespace RealismOverhaul.Communications
             else
             {
                 Fields[nameof(ScaleIndex)].guiActiveEditor = false;
+                Fields[nameof(TotalMassString)].guiActiveEditor = false;
+                Fields[nameof(TotalMassString)].guiActive = false;
                 ScaleEdit.scene = UI_Scene.None;
             }
         }
