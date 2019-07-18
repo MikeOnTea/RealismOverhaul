@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using UnityEngine;
 
 namespace RealismOverhaul.Utils
 {
@@ -25,12 +22,22 @@ namespace RealismOverhaul.Utils
         private static void TranslateNode(float scale, AttachNode node, AttachNode baseNode, bool translateParts)
         {
             var oldPosition = node.position;
-            node.position = baseNode.position * scale;
-            if (node.attachedPart == node.owner.parent && translateParts)
+            TranslateNodePosition(scale, node, baseNode);
+            TranslatePartIfNeeded(node, translateParts, oldPosition);
+        }
+
+        private static void TranslatePartIfNeeded(AttachNode node, bool translateParts, Vector3 oldPosition)
+        {
+            if (node.attachedPart == node.owner?.parent && translateParts)
             {
-                node.owner.transform.Translate(oldPosition - node.position);
+                TranslatePart(node, oldPosition);
             }
         }
+
+        private static void TranslateNodePosition(float scale, AttachNode node, AttachNode baseNode) => node.position = GetTranslatedPosition(scale, baseNode);
+        private static void TranslatePart(AttachNode node, Vector3 oldPosition) => node.owner.transform.Translate(oldPosition - node.position);
+
+        private static Vector3 GetTranslatedPosition(float scale, AttachNode baseNode) => baseNode.position * scale;
 
         private static void ScaleTransform(Part part, float scale)
         {

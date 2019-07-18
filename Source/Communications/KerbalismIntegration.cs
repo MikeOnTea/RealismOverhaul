@@ -1,10 +1,10 @@
 ﻿using CommNet;
+using KSP.Localization;
 using RealismOverhaul.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using UnityEngine;
 
 namespace RealismOverhaul.Communications
@@ -40,16 +40,21 @@ namespace RealismOverhaul.Communications
             public void Remove(Vessel vessel)
             {
                 _antennaCache.Remove(vessel.id);
-                if (vessel.connection.Comm != null)
+                RemoveDataRateCacheEntry(vessel);
+            }
+
+            private void RemoveDataRateCacheEntry(Vessel vessel)
+            {
+                var commNode = GetCommNode(vessel);
+                if (commNode != null)
                 {
-                    _dataRateCache.Remove(vessel.connection.Comm);
+                    _dataRateCache.Remove(commNode);
                 }
             }
 
-            public void Remove(ProtoVessel protoVessel)
-            {
-                _antennaCache.Remove(protoVessel.vesselID);
-            }
+            private static CommNode GetCommNode(Vessel vessel) => vessel.connection?.Comm;
+
+            public void Remove(ProtoVessel protoVessel) => _antennaCache.Remove(protoVessel.vesselID);
         }
 
         private struct CachedAntenna
@@ -89,15 +94,19 @@ namespace RealismOverhaul.Communications
 
         private static void AddCallbacks()
         {
-            GameEvents.onVesselChange.Add((v) => { cache.Remove(v); });
+            GameEvents.onVesselChange.Add(v => cache.Remove(v));
             GameEvents.onVesselStandardModification.Add(v => cache.Remove(v));
             GameEvents.onGameSceneSwitchRequested.Add(_ => cache.Clear());
             GameEvents.onVesselRecovered.Add((v, _) => cache.Remove(v));
             GameEvents.onVesselTerminated.Add(v => cache.Remove(v));
             GameEvents.onVesselWillDestroy.Add(v => cache.Remove(v));
             GameEvents.onPartCouple.Add(x => cache.Clear());
-            GameEvents.onPartDie.Add(x => cache.Remove(x.vessel));
+            GameEvents.onPartDie.Add(x => RemovePartFromCache(x));
         }
+
+        private static void RemovePartFromCache(Part x) => cache.Remove(GetVessel(x));
+
+        private static Vessel GetVessel(Part x) => x.vessel;
 
         private static void AddCommsHandler(Type api)
         {
@@ -112,12 +121,12 @@ namespace RealismOverhaul.Communications
             var vesselSpecs = GetAntennaSpecs(vessel);
             var powered = kerbalismAntennaInfo.GetField<bool>("powered");
             var antennaInfo = GetAntennaInfo(vessel, vesselSpecs, powered);
-            SetKerbalismFields(kerbalismAntennaInfo, vessel, antennaInfo);
+            SetKerbalismFields(kerbalismAntennaInfo, antennaInfo);
         }
 
-        private static void SetKerbalismFields(object kerbalismAntennaInfo, Vessel vessel, AntennaInfo antennaInfo)
+        private static void SetKerbalismFields(object kerbalismAntennaInfo, AntennaInfo antennaInfo)
         {
-            kerbalismAntennaInfo.SetField("target_name", vessel.connection.ControlPath.First.end.displayName.Replace("Kerbin", "DSN"));
+            kerbalismAntennaInfo.SetField("target_name", antennaInfo.Target);
             kerbalismAntennaInfo.SetField("strength", antennaInfo.Strength);
             kerbalismAntennaInfo.SetField("rate", antennaInfo.Rate / 1024 / 1024 / 8);
             kerbalismAntennaInfo.SetField("status", antennaInfo.Status);
@@ -125,6 +134,10 @@ namespace RealismOverhaul.Communications
             kerbalismAntennaInfo.SetField("ec", antennaInfo.PowerUsed / 1000);
             kerbalismAntennaInfo.SetField("control_path", antennaInfo.ControlPath);
         }
+
+        private static string GetConnectionTargetName(Vessel vessel) => Localizer.Format(GetFirstHopNode(vessel).name).Replace("Kerbin", "DSN");
+        private static CommNode GetFirstHopNode(Vessel vessel) => GetControlPath(vessel).First.end;
+        private static CommPath GetControlPath(Vessel vessel) => vessel.connection.ControlPath;
 
         private static AntennaInfo GetAntennaInfo(Vessel v, AntennaSpecs vesselSpecs, bool powered)
         {
@@ -151,7 +164,7 @@ namespace RealismOverhaul.Communications
                 antennaInfo.Status = link.hopType == HopType.Home ? 0 : 1;
                 antennaInfo.Strength = link.signalStrength;
                 antennaInfo.Rate = GetRate(v, vesselSpecs, link);
-                antennaInfo.Target = v.connection.ControlPath.First.end.displayName.Replace("Kerbin", "DSN");
+                antennaInfo.Target = GetConnectionTargetName(v);
             }
             else if (v.connection.InPlasma)
             {
