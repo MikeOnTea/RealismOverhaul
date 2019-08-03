@@ -120,7 +120,8 @@ namespace RealismOverhaul.Communications
         {
             var vesselSpecs = GetAntennaSpecs(vessel);
             var powered = kerbalismAntennaInfo.GetField<bool>("powered");
-            var antennaInfo = GetAntennaInfo(vessel, vesselSpecs, powered);
+            var transmitting = kerbalismAntennaInfo.GetField<bool>("transmitting");
+            var antennaInfo = GetAntennaInfo(vessel, vesselSpecs, powered, transmitting);
             SetKerbalismFields(kerbalismAntennaInfo, antennaInfo);
         }
 
@@ -139,23 +140,24 @@ namespace RealismOverhaul.Communications
         private static CommNode GetFirstHopNode(Vessel vessel) => GetControlPath(vessel).First.end;
         private static CommPath GetControlPath(Vessel vessel) => vessel.connection.ControlPath;
 
-        private static AntennaInfo GetAntennaInfo(Vessel v, AntennaSpecs vesselSpecs, bool powered)
+        private static AntennaInfo GetAntennaInfo(Vessel v, AntennaSpecs vesselSpecs, bool powered, bool transmitting)
         {
             if (!powered || v.connection == null)
             {
                 return new AntennaInfo(2);
             }
 
-            return GetConnectedAntennaInfo(v, vesselSpecs);
+            return GetConnectedAntennaInfo(v, vesselSpecs, transmitting);
         }
 
-        private static AntennaInfo GetConnectedAntennaInfo(Vessel v, AntennaSpecs vesselSpecs)
+        private static AntennaInfo GetConnectedAntennaInfo(Vessel v, AntennaSpecs vesselSpecs, bool transmitting)
         {
             var antennaInfo = new AntennaInfo(2);
 
             if (!v.loaded)
             {
                 v.connection.SetField("unloadedDoOnce", true);
+                antennaInfo.PowerUsed = vesselSpecs.IdlePower + (transmitting ? vesselSpecs.TxUsedPower : 0);
             }
             if (v.connection.IsConnected)
             {
@@ -234,7 +236,8 @@ namespace RealismOverhaul.Communications
                 {
                     vesselSpec.MinDataRate = Mathf.Min(vesselSpec.MinDataRate, antennaSpecs.MinDataRate);
                     vesselSpec.MaxDataRate = Mathf.Min(vesselSpec.MaxDataRate, antennaSpecs.MaxDataRate);
-                    vesselSpec.TotalPower += antennaSpecs.TotalPower;
+                    vesselSpec.IdlePower += antennaSpecs.IdlePower;
+                    vesselSpec.TxUsedPower += antennaSpecs.TxUsedPower;
                 }
             }
 
