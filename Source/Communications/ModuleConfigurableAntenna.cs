@@ -167,7 +167,7 @@ namespace RealismOverhaul.Communications
             var frequencyFactor = GetFrequencyFactor(tl.Frequency, antennaShape, referenceFrequency);
             var txUsedPower = GetTxUsedPower(txPowerDbmw, tl);
             var commPower = GetMdtAntennaPower(referenceGain, tl.Gain, GetScaleFromIndex(scaleIndex), txPowerDbmw.FromDBm(), dataRateExponent.FromLog2() * tl.MinDataRate, frequencyFactor);
-            return new AntennaSpecs(txUsedPower, txUsedPower + tl.BasePower, commPower, tl.MinDataRate, tl.MaxDataRate);
+            return new AntennaSpecs(txUsedPower, tl.BasePower, commPower, tl.MinDataRate, tl.MaxDataRate);
         }
 
         private static float GetTxUsedPower(float txPowerDbmw, TechLevel tl) => txPowerDbmw.FromDBm() / tl.Efficiency;
@@ -178,7 +178,7 @@ namespace RealismOverhaul.Communications
             var frequencyFactor = GetFrequencyFactor(tl.Frequency, antennaShape, referenceFrequency);
             var txUsedPower = GetTxUsedPower(txPowerDbmw, tl);
             var commPower = GetMdtAntennaPower(referenceGain, tl.Gain, GetScaleFromIndex(ScaleIndex), txPowerDbmw.FromDBm(), MinDataRate, frequencyFactor);
-            return new AntennaSpecs(txUsedPower, txUsedPower + tl.BasePower, commPower, tl.MinDataRate, tl.MaxDataRate);
+            return new AntennaSpecs(txUsedPower, tl.BasePower, commPower, tl.MinDataRate, tl.MaxDataRate);
         }
 
         private void SetupPaw()
