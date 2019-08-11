@@ -20,7 +20,8 @@ namespace RealismOverhaul.Communications
             StartKerbalismIntegration();
         }
 
-        private class Cache {
+        private class Cache
+        {
             private Storage<Guid, ICollection<CachedAntenna>> _antennaCache = new Storage<Guid, ICollection<CachedAntenna>>();
             public Storage<CommNode, float> _dataRateCache = new Storage<CommNode, float>();
 
@@ -142,7 +143,7 @@ namespace RealismOverhaul.Communications
 
         private static AntennaInfo GetAntennaInfo(Vessel v, AntennaSpecs vesselSpecs, bool powered, bool transmitting)
         {
-            if(!vesselSpecs.Valid)
+            if (!vesselSpecs.Valid)
             {
                 return new AntennaInfo(2) { Strength = -1 };
             }
@@ -156,13 +157,9 @@ namespace RealismOverhaul.Communications
 
         private static AntennaInfo GetConnectedAntennaInfo(Vessel v, AntennaSpecs vesselSpecs, bool transmitting)
         {
-            var antennaInfo = new AntennaInfo(2);
+            TriggerUnloadedDoOnce(v);
 
-            if (!v.loaded)
-            {
-                v.connection.SetField("unloadedDoOnce", true);
-                antennaInfo.PowerUsed = vesselSpecs.IdlePower + (transmitting ? vesselSpecs.TxUsedPower : 0);
-            }
+            var antennaInfo = new AntennaInfo(2);
             if (v.connection.IsConnected)
             {
                 antennaInfo.Linked = true;
@@ -177,10 +174,23 @@ namespace RealismOverhaul.Communications
                 antennaInfo.Status = 3;
             }
 
+            antennaInfo.PowerUsed = GetAntennaPowerUsed(vesselSpecs, transmitting, v);
             antennaInfo.ControlPath = GetControlPathItems(v);
 
             return antennaInfo;
         }
+
+        private static void TriggerUnloadedDoOnce(Vessel v)
+        {
+            if (!v.loaded)
+            {
+                v.connection.SetField("unloadedDoOnce", true);
+            }
+        }
+
+        private static float GetAntennaPowerUsed(AntennaSpecs vesselSpecs, bool transmitting, Vessel v) => GetTransmissionPower(vesselSpecs, transmitting) + GetIdlePower(vesselSpecs, v);
+        private static float GetIdlePower(AntennaSpecs vesselSpecs, Vessel v) => v.loaded ? 0 : vesselSpecs.IdlePower;
+        private static float GetTransmissionPower(AntennaSpecs vesselSpecs, bool transmitting) => transmitting ? vesselSpecs.TxUsedPower : 0;
 
         private static float GetRate(Vessel vessel, AntennaSpecs vesselSpecs, CommLink link)
         {
@@ -197,7 +207,7 @@ namespace RealismOverhaul.Communications
 
         private static float GetFirstHopRate(AntennaSpecs vesselSpecs, CommLink link)
         {
-            var preciseRate = vesselSpecs.MinDataRate * Mathf.Pow(1 - (float) link.signalStrength, -2);
+            var preciseRate = vesselSpecs.MinDataRate * Mathf.Pow(1 - (float)link.signalStrength, -2);
             var powerOf2Rate = Mathf.Floor(preciseRate.ToLog2()).FromLog2();
             return Mathf.Min(vesselSpecs.MaxDataRate, powerOf2Rate);
         }
@@ -268,7 +278,7 @@ namespace RealismOverhaul.Communications
 
         private static void DisableAntennaUI(CachedAntenna cachedAntenna)
         {
-            if(cachedAntenna.Snapshot != null)
+            if (cachedAntenna.Snapshot != null)
             {
                 return;
             }
