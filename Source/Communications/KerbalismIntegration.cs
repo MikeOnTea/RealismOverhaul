@@ -71,7 +71,7 @@ namespace RealismOverhaul.Communications
 
         private class AntennaInfo
         {
-            public double Strength { get; set; };
+            public double Strength { get; set; }
             public double Rate { get; set; }
             public int Status { get; set; }
             public bool Linked { get; set; }

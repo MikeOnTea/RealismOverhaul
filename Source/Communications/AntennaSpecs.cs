@@ -9,7 +9,7 @@
         public float MaxDataRate { get; set; }
         public bool Valid { get; set; }
 
-        public AntennaSpecs(float txUsedPower, float idlePower, double commNetPower, float minDataRate, float maxDataRate, bool valid)
+        public AntennaSpecs(float txUsedPower, float idlePower, double commNetPower, float minDataRate, float maxDataRate, bool valid = true)
         {
             TxUsedPower = txUsedPower;
             IdlePower = idlePower;
