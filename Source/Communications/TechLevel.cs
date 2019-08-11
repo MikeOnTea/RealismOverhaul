@@ -44,7 +44,7 @@ namespace RealismOverhaul.Communications
         private static IList<TechLevel> _techLevels = new List<TechLevel>()
         {
             new TechLevel(1/18f, -11f, 4, 4, 0.1f, 1.6f, 1, 2f, 108f, 2, 5),
-            new TechLevel(1/13f, -8f, 4, 4, 1, 1.34f, 0.26f, 1f, 108f, 4, 4),
+            new TechLevel(1/13f, -8f, 4, 4, 1, 1.34f, 0.26f, 0.3f, 108f, 4, 4),
             new TechLevel(1/10f, -4.5f, 1, 64, 5, 1.16f, 6.9f, 8f, 378f, 30, 3.5f),
             new TechLevel(3/23f, -2.5f, 8, 64, 5, 1, 20.2f, 19.5f, 960f, 50, 3),
             new TechLevel(1/6f, 0f, 8, 4096, 10, 0.86f, 17.2f, 25.7f, 2295f, 80, 2.5f),
