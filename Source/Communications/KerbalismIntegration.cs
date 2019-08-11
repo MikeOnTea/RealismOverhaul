@@ -71,7 +71,7 @@ namespace RealismOverhaul.Communications
 
         private class AntennaInfo
         {
-            public double Strength { get; set; }
+            public double Strength { get; set; };
             public double Rate { get; set; }
             public int Status { get; set; }
             public bool Linked { get; set; }
@@ -142,6 +142,10 @@ namespace RealismOverhaul.Communications
 
         private static AntennaInfo GetAntennaInfo(Vessel v, AntennaSpecs vesselSpecs, bool powered, bool transmitting)
         {
+            if(!vesselSpecs.Valid)
+            {
+                return new AntennaInfo(2) { Strength = -1 };
+            }
             if (!powered || v.connection == null)
             {
                 return new AntennaInfo(2);
@@ -173,7 +177,7 @@ namespace RealismOverhaul.Communications
                 antennaInfo.Status = 3;
             }
 
-            antennaInfo.ControlPath = GetControlPath(v, antennaInfo);
+            antennaInfo.ControlPath = GetControlPathItems(v);
 
             return antennaInfo;
         }
@@ -198,7 +202,7 @@ namespace RealismOverhaul.Communications
             return Mathf.Min(vesselSpecs.MaxDataRate, powerOf2Rate);
         }
 
-        private static IList<string[]> GetControlPath(Vessel v, AntennaInfo antennaInfo)
+        private static IList<string[]> GetControlPathItems(Vessel v)
         {
             var path = new List<string[]>();
             foreach (var link in v.connection.ControlPath)
@@ -226,7 +230,7 @@ namespace RealismOverhaul.Communications
         private static AntennaSpecs GetAntennaSpecs(Vessel v)
         {
             var cachedAntennas = cache.AntennaCache.GetOrAdd(v, GetAntennas);
-            var vesselSpec = new AntennaSpecs(0, 0, 0, float.MaxValue, float.MaxValue);
+            var vesselSpec = new AntennaSpecs(0, 0, 0, float.MaxValue, float.MaxValue, cachedAntennas.Count > 0);
             foreach (var cachedAntenna in cachedAntennas)
             {
                 DisableAntennaUI(cachedAntenna);
