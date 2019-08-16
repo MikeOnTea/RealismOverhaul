@@ -15,26 +15,14 @@ namespace RealismOverhaul.Communications
         private const float ANTENNA_EFFICIENCY = 0.636f;
         private const float SPEED_OF_LIGHT = 299_792_458;
 
-        [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Tx Power")]
-        public string TxPowerString;
+        [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Power (Tx/Total)")]
+        public string PowerString;
 
-        [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Total Power")]
-        public string TotalPowerString;
+        [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Range (DSN/Self)")]
+        public string RangeString;
 
-        [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Min. Data Rate")]
-        public string MinDataRateString;
-
-        [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Range to DSN")]
-        public string RangeDsnString;
-
-        [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Range to Self")]
-        public string RangeSelfString;
-
-        [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Electronics Mass")]
-        public string ElectronicsMassString;
-
-        [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Total Mass")]
-        public string TotalMassString;
+        [KSPField(guiActive = true, guiActiveEditor = true)]
+        public string MassString;
 
         [KSPField(isPersistant = true, guiActiveEditor = false, guiName = "Data Rate"), UI_ChooseOption(scene = UI_Scene.Flight)]
         public int DataRateExponent = 0;
@@ -213,13 +201,13 @@ namespace RealismOverhaul.Communications
             if (IsScalable)
             {
                 ScaleEdit.options = CreateScaleOptions();
+                Fields[nameof(MassString)].guiName = "Mass (Electronics/Total)";
             }
             else
             {
                 Fields[nameof(ScaleIndex)].guiActiveEditor = false;
-                Fields[nameof(TotalMassString)].guiActiveEditor = false;
-                Fields[nameof(TotalMassString)].guiActive = false;
                 ScaleEdit.scene = UI_Scene.None;
+                Fields[nameof(MassString)].guiName = "Mass (Electronics)";
             }
         }
 
@@ -311,13 +299,9 @@ namespace RealismOverhaul.Communications
 
         private void UpdatePawFields()
         {
-            TxPowerString = TxPower.Format("W");
-            TotalPowerString = TotalUsedPower.Format("W");
-            MinDataRateString = MinDataRate.Format("b/s", 1024);
-            RangeDsnString = GetRange(antennaPower, DsnRange).Format("m");
-            RangeSelfString = GetRange(antennaPower, antennaPower).Format("m");
-            ElectronicsMassString = (ElectronicsMass * 1e6f).Format("g");
-            TotalMassString = (TotalMass * 1e6f).Format("g");
+            PowerString = $"{TxPower.Format("W")}/{TotalUsedPower.Format("W")}";
+            RangeString = $"{GetRange(antennaPower, DsnRange).Format("m")}/{GetRange(antennaPower, antennaPower).Format("m")} @ {MinDataRate.Format("b/s", 1024)}";
+            MassString = $"{(ElectronicsMass * 1e6f).Format("g")}{ (IsScalable ? "/" + (TotalMass * 1e6f).Format("g") : "")}";
         }
 
         private float GetRange(double a, double b) => (float)Math.Sqrt(a * b);
